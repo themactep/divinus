@@ -56,6 +56,10 @@ int __fgetc_unlocked(FILE *stream) { return fgetc(stream); }
 double __log_finite(double x) { return log(x); }
 
 #if defined(__arm__) || defined(__aarch64__) || defined(__mips__)
+#if defined(__mips__) && defined(__UCLIBC__)
+#pragma GCC visibility push(hidden)
+#define COMPAT_MMAP_HIDDEN 1
+#endif
 void *mmap(void *start, size_t len, int prot, int flags, int fd, off_t off) {
     return (void*)syscall(SYS_mmap2, start, len, prot, flags, fd, (long)(off >> 12));
 }
@@ -67,6 +71,9 @@ void *__mmap64(void *start, size_t len, int prot, int flags, int fd, off_t off) 
 void *mmap64(void *start, size_t len, int prot, int flags, int fd, off_t off) {
     return (void*)syscall(SYS_mmap2, start, len, prot, flags, fd, (long)(off >> 12));
 }
+#endif
+#ifdef COMPAT_MMAP_HIDDEN
+#pragma GCC visibility pop
 #endif
 #else
 void *__mmap64(void *start, size_t len, int prot, int flags, int fd, off_t off) {
